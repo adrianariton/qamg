@@ -21,3 +21,9 @@ with changeble inputs (no custom made circuit)
 # Resources
 - [https://quantum-computing.ibm.com](https://quantum-computing.ibm.com)
 - [https://qiskit.org/textbook/ch-prerequisites/setting-the-environment.html](Qiskit)
+
+
+# Notes
+## 1.1 To subtract 1, apply QFT and rollback phase as in the [first link](https://quantum-computing.ibm.com)
+
+## 1.2 Control-subtract with N, and modify the builtin modular multiplicator
