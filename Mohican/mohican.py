@@ -136,15 +136,21 @@ def get_theme(filepath,set_theme, themes, i=-1):
                 if i == 0:
                     break
     return vars, props
-
+'''
+    Compute css-themes from css file
+'''
 themes = compute_themes(filepath='input.txt')
-vars, props = get_theme(filepath='input.txt', set_theme='theme-g10', themes=themes,i=3000)
 
 print('---Themes----')
 print(themes)
 print()
 print()
+val = input("> Choose theme (no '.') [exp: theme-g10]:\n> ")
 
+'''
+    Compute tables of variables and properties for a given theme
+'''
+vars, props = get_theme(filepath='input.txt', set_theme=val, themes=themes,i=3000)
 
 val = input("> Property:\n> ")
 
