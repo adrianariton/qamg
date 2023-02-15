@@ -78,7 +78,7 @@ cl = ClassicalRegister(2*bits)
     |a\ |b\ |0\ => |a\ |b\ |a*b\ 
 '''
 mul = RGQFTMultiplier(num_state_qubits=bits, num_result_qubits=2*bits).to_instruction()
-
+# mul = gates.QFTArithmetic.QFTModularMultiply(in_bits=bits, out_bits=2*bits)
 
 
 circuit = QuantumCircuit(a,b,n,cl)

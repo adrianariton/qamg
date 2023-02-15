@@ -1,5 +1,7 @@
 from qiskit import QuantumCircuit, QuantumRegister, ClassicalRegister, QuantumRegister, assemble, Aer, AncillaRegister
 from math import pi, sqrt
+from qiskit.circuit.library.standard_gates import PhaseGate
+from qiskit.circuit.library.basis_change import QFT
 
 carry_circ = QuantumCircuit(4, name='CARRY')
 carry_circ.ccx(1, 2, 3)
@@ -321,6 +323,122 @@ class QuantumPeriodGates:
         qft_circ.draw('mpl', filename='qft.qg.png')
 
         return qft_circ.to_instruction()
+
+class QFTArithmetic:
+    def QFTInPlaceAdder(in_bits):
+        a = QuantumRegister(in_bits)
+        b = QuantumRegister(in_bits + 1)
+        circ = QuantumCircuit(a, b, name='QFTPadder')
+        circ.append(QFT(in_bits+1, do_swaps=False).to_gate(), RegisterUtils.join(b))
+        for k in range(in_bits + 1):
+            for e in range(in_bits):
+                ang = (2 * pi) / (2 ** (k + 1 - e))
+                circ.append(PhaseGate(ang).control(1), [a[e], b[k]])
+        circ.append(QFT(in_bits+1, do_swaps=False).inverse().to_gate(), RegisterUtils.join(b))
+        return circ.to_gate()
+    
+    def QFTInPlaceDAdder(in_bits):
+        a = QuantumRegister(in_bits)
+        b = QuantumRegister(in_bits + 1)
+        circ = QuantumCircuit(a, b, name='QFTPadder_dg')
+        circ.append(QFT(in_bits+1, do_swaps=False).to_gate(), RegisterUtils.join(b))
+        for k in range(in_bits + 1):
+            for e in range(in_bits):
+                ang = -(2 * pi) / (2 ** (k + 1 - e))
+                circ.append(PhaseGate(ang).control(1), [a[e], b[k]])
+        circ.append(QFT(in_bits+1, do_swaps=False).inverse().to_gate(), RegisterUtils.join(b))
+        return circ.to_gate()
+    
+    '''
+        N = D * Q + R
+         
+        Input registers: n(bits), d(bits), r(bits):0, q(bits):0, anc(3):0
+        Output (in place): n, d, r: n%d, q: n/d, anc':garbage
+        
+            |n\ |d\ |0\ |0\ |000\ => |n\ |d\ |n%d\ |n/d\ |***\ 
+        
+        Pseudo code thanks to wikipedia:
+        | --------------------------------------------------------------------------------------------------
+        |  
+        |  Q := 0                  -- Initialize quotient and remainder to zero
+        |  R := 0                     
+        |  for i := n - 1 .. 0 do  -- Where n is number of bits in N
+        |      R := R << 1           -- Left-shift R by 1 bit
+        |      R(0) := N(i)          -- Set the least-significant bit of R equal to bit i of the numerator
+        |      if R ≥ D then
+        |          R := R - D
+        |          Q(i) := 1
+        |      end
+        |  end
+    '''
+    def QFTRemainderTheorem(in_bits, h = -1):
+        n = QuantumRegister(in_bits)
+        d = QuantumRegister(in_bits)
+        r = QuantumRegister(in_bits)
+        anc = QuantumRegister(3)
+        q = QuantumRegister(in_bits)
+        
+        
+        circ = QuantumCircuit(n, d ,r, q, anc, name='QFTRTH')
+        ipadd = QFTArithmetic.QFTInPlaceAdder(in_bits)
+    
+        u = 0
+
+        leftshift = rslide(in_bits, 1)
+        for i in reversed(range(in_bits)):
+            u = u + 1
+            circ.append(leftshift, RegisterUtils.join(r, anc[0:2]))
+
+            circ.cnot(n[i], r[0])
+            
+            circ.append(ipadd.inverse(), RegisterUtils.join(d, r, anc[0:1]))
+            
+            circ.cnot(anc[0], q[i])
+            
+            circ.append(ipadd, RegisterUtils.join(d, r, anc[0:1]))
+            
+            circ.x(q[i])
+
+            circ.append(ipadd.inverse().control(1), [q[i]] + RegisterUtils.join(d, r, anc[0:1]))
+
+            if h != -1 and u >= h:
+                print(f'@debug RTH_Gate: Stopped_At( \n \tu: {u}\n\tLast step: i = {i}\n)')
+                break
+
+        return circ.to_instruction()
+            
+            
+            
+    '''
+        QFT ModularMultiply gate is still in progress and will be implemented 
+        with 3 QFTRemainderTheorem gates and one Phase Multiplication
+    '''
+    def QFTModularMultiply(in_bits, out_bits):
+        a = QuantumRegister(in_bits)
+        b = QuantumRegister(in_bits)
+        n = QuantumRegister(in_bits)
+        out = QuantumRegister(out_bits)
+        t = QuantumRegister(in_bits)
+        x = QuantumRegister(1)
+        
+        circ = QuantumCircuit(a, b, n, out, t, x, name='QFTMM')
+        
+        circ.append(QFT(out_bits, do_swaps=False).to_gate(), RegisterUtils.join(out))
+        
+        # 2 x QFTRTH
+
+        # QFTMultiply
+        for i in range(in_bits):
+            for j in range(in_bits):
+                for k in range(out_bits):
+                    ang = (2 * pi) / (2 ** (k + 1 - i - j))
+                    circ.append(PhaseGate(ang).control(2), [a[j], b[i], out[k]])
+
+        circ.append(QFT(out_bits, do_swaps=False).inverse().to_gate(), RegisterUtils.join(out))
+
+        # 2 x QFTRTH
+
+        return circ.to_gate()
 
 def all():
     return ['ADD', 'CARRY', 'SUM', 'CARRY_dg', 'SUM_dg', 'ADD_dg', 'MODADDn', 'MODADDn_dg', 'MODADD', 'MODADD_dg', 'QFT', 'QFT_dg', 'NCD', 'NCD_dg', 'LSLIDE', 'LSLIDE_dg', 'RSLIDE', 'RSLIDE_dg']
