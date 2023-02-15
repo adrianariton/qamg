@@ -407,25 +407,49 @@ class QFTArithmetic:
 
         return circ.to_instruction()
             
-            
-            
+    def QFTnqr(in_bits):
+        n = QuantumRegister(in_bits)
+        q = QuantumRegister(in_bits)
+        r = QuantumRegister(in_bits)
+        out = QuantumRegister(in_bits)
+        anc = QuantumRegister(1)
+        circ = QuantumCircuit(n, q, r, out, anc)
+        
+        for i in range(in_bits):
+            for j in range(in_bits):
+                for k in range(in_bits):
+                    ang = (2 * pi) / (2 ** (k + 1 - i - j))
+                    circ.append(PhaseGate(ang).control(2), [n[j], q[i], out[k]])
+
+        
+        ipadd = QFTArithmetic.QFTInPlaceAdder(in_bits=in_bits)
+        
+        circ.append(ipadd, RegisterUtils.join(r, out, anc[0:]))
+        
+        return circ.to_gate()
     '''
         QFT ModularMultiply gate is still in progress and will be implemented 
         with 3 QFTRemainderTheorem gates and one Phase Multiplication
+        # https://en.wikipedia.org/wiki/Modular_exponentiation
+        a * b mod n
     '''
     def QFTModularMultiply(in_bits, out_bits):
         a = QuantumRegister(in_bits)
         b = QuantumRegister(in_bits)
         n = QuantumRegister(in_bits)
-        out = QuantumRegister(out_bits)
-        t = QuantumRegister(in_bits)
-        x = QuantumRegister(1)
+        q = QuantumRegister(in_bits)
+        out =   QuantumRegister(out_bits)
+        r = QuantumRegister(in_bits)
+        anc = QuantumRegister(9)
         
         circ = QuantumCircuit(a, b, n, out, t, x, name='QFTMM')
         
         circ.append(QFT(out_bits, do_swaps=False).to_gate(), RegisterUtils.join(out))
         
+        rth1 = QFTArithmetic.QFTRemainderTheorem(in_bits=in_bits)
         # 2 x QFTRTH
+        circ.append(rth1, RegisterUtils.join(a, n, q, r))
+        
 
         # QFTMultiply
         for i in range(in_bits):

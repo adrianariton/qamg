@@ -18,11 +18,19 @@ with changeble inputs (no custom made circuit)
 - [https://apps.dtic.mil/sti/pdfs/AD1083851.pdf](https://apps.dtic.mil/sti/pdfs/AD1083851.pdf)
 - [https://arxiv.org/pdf/1202.6614.pdf](https://arxiv.org/pdf/1202.6614.pdf)
 - [https://arxiv.org/pdf/quant-ph/0406176.pdf](https://arxiv.org/pdf/quant-ph/0406176.pdf)
+- [Some nice video courses on qutube](https://www.qutube.nl/quantum-computer-12/surface-codes)
 
 # Resources
 - [https://quantum-computing.ibm.com](https://quantum-computing.ibm.com)
-- [https://qiskit.org/textbook/ch-prerequisites/setting-the-environment.html](Qiskit)
+- [Qiskit](https://qiskit.org/textbook/ch-prerequisites/setting-the-environment.html)
 
+
+# Noise QEC
+- [QEC Codes](https://bvermersch.github.io/Teaching/QO_Lecture3.pdf)
+- [QEC Correction](https://wdscultan.github.io/files/QEC.pdf)
+- [https://en.wikipedia.org/wiki/Quantum_error_correction](https://en.wikipedia.org/wiki/Quantum_error_correction)
+- [https://arxiv.org/pdf/1808.06709.pdf](https://arxiv.org/pdf/1808.06709.pdf)
 
 # History
 - 15.Feb.23 : Added QFTRemainderTheorem (RTH)
+
