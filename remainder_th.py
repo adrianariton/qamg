@@ -89,7 +89,7 @@ for i in range(bits):
 job = sampler.run(circuit)
 result = job.result()
 
-circuit.draw("mpl", filename='rth.qg.png')
+circuit.draw("mpl", filename='pics/rth.qg.png')
 print(f">>> Quasi-distribution: {result.quasi_dists[0]}")
 
 '''

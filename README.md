@@ -17,13 +17,12 @@ with changeble inputs (no custom made circuit)
 - [https://arxiv.org/pdf/quant-ph/0112107.pdf](https://arxiv.org/pdf/quant-ph/0112107.pdf)
 - [https://apps.dtic.mil/sti/pdfs/AD1083851.pdf](https://apps.dtic.mil/sti/pdfs/AD1083851.pdf)
 - [https://arxiv.org/pdf/1202.6614.pdf](https://arxiv.org/pdf/1202.6614.pdf)
+- [https://arxiv.org/pdf/quant-ph/0406176.pdf](https://arxiv.org/pdf/quant-ph/0406176.pdf)
 
 # Resources
 - [https://quantum-computing.ibm.com](https://quantum-computing.ibm.com)
 - [https://qiskit.org/textbook/ch-prerequisites/setting-the-environment.html](Qiskit)
 
 
-# Notes
-## 1.1 To subtract 1, apply QFT and rollback phase as in the [first link](https://quantum-computing.ibm.com)
-
-## 1.2 Control-subtract with N, and modify the builtin modular multiplicator
+# History
+- 15.Feb.23 : Added QFTRemainderTheorem (RTH)
