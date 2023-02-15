@@ -428,6 +428,7 @@ class QFTArithmetic:
         
         return circ.to_gate()
     '''
+        WIP!! [Does not work]
         QFT ModularMultiply gate is still in progress and will be implemented 
         with 3 QFTRemainderTheorem gates and one Phase Multiplication
         # https://en.wikipedia.org/wiki/Modular_exponentiation
@@ -442,7 +443,7 @@ class QFTArithmetic:
         r = QuantumRegister(in_bits)
         anc = QuantumRegister(9)
         
-        circ = QuantumCircuit(a, b, n, out, t, x, name='QFTMM')
+        circ = QuantumCircuit(a, b, n, out, name='QFTMM')
         
         circ.append(QFT(out_bits, do_swaps=False).to_gate(), RegisterUtils.join(out))
         
