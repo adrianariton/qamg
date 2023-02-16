@@ -37,7 +37,7 @@ service = QiskitRuntimeService()
 '''
     Change it to whatever suits your needs
 '''
-bits = 4
+bits = 6
 
 '''
     Declare Quantum Registers
@@ -60,7 +60,7 @@ rth = gates.QFTArithmetic.QFTRemainderTheorem(bits)
 
 circuit = QuantumCircuit(n,d,r,q,anc,cl)
 
-gates.init_reg(circuit, n, ds.binary(9, bits=bits))
+gates.init_reg(circuit, n, ds.binary(13, bits=bits))
 gates.init_reg(circuit, d, ds.binary(3, bits=bits))
 
 circuit.append(rth, regs.join(n,d,r,q,anc))

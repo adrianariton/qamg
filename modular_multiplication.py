@@ -1,6 +1,7 @@
 '''
-    --- WORK IN PROGRESS ---
-    [Does not work yet]
+    ---- DEPRECATED ----
+    
+    It has too many bits in this form, it is unusable
     
     See more complex gates here:
     https://qiskit.org/documentation/apidoc/circuit_library.html
@@ -43,11 +44,13 @@ bits = 3
 '''
 a = QuantumRegister(bits)
 b = QuantumRegister(bits)
-n = QuantumRegister(bits)
+n = QuantumRegister(2*bits)
+q = QuantumRegister(2*bits)
 out = QuantumRegister(2*bits)
-t = QuantumRegister(bits+1)
+r = QuantumRegister(2*bits)
+anc = QuantumRegister(4)
 
-cl = ClassicalRegister(1)
+cl = ClassicalRegister(bits)
 
 
 '''
@@ -59,30 +62,30 @@ cl = ClassicalRegister(1)
     
     |a\ |b\ |n\ |00...00\ |0\  => |a\ |b\ |n\ |a*b mod n\ |t\ 
 '''
-mul = gates.QFTArithmetic.QFTModularMultiply(in_bits=bits, out_bits=2*bits)
+mul = gates.QFTArithmetic.QFTModularMultiply(in_bits=bits)
 '''
     QFT ModularMultiply gate is still in progress and will be implemented 
     with 3 QFTRemainderTheorem gates and one Phase Multiplication
 '''
 
-circuit = QuantumCircuit(a,b,n, out, t,cl)
+circuit = QuantumCircuit(a,b,n,q, out, r, anc,cl)
 
 gates.init_reg(circuit, a, ds.binary(2, bits=bits))
-gates.init_reg(circuit, b, ds.binary(3, bits=bits))
-gates.init_reg(circuit, n, ds.binary(5, bits=bits))
+gates.init_reg(circuit, b, ds.binary(7, bits=bits))
+gates.init_reg(circuit, n, ds.binary(5, bits=2*bits))
 
 '''
     Multiply registers a and b modulo n and output to register out
 '''
-circuit.append(mul, regs.join(a, b, n, out, t))
+circuit.append(mul, regs.join(a, b, n, q, out, r, anc))
     
 
 '''
     Measure the out-register
 '''
 circuit.barrier()
-for i in range(1):
-    circuit.measure(t[bits + i], cl[i])
+for i in range(bits):
+    circuit.measure(r[i], cl[i])
 
 
 
