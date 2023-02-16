@@ -33,4 +33,5 @@ with changeble inputs (no custom made circuit)
 
 # History
 - 15.Feb.23 : Added QFTRemainderTheorem (RTH)
+- 16.Feb.23 : Added qMUX
 
