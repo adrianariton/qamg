@@ -3,7 +3,7 @@
 See Mohican basic code in the Mohican folder.
 Qiskit links are in code.
 
-Baic example for:
+Basic example for:
 - Aer (slow ish simulator)
 - Modular addition and duplication (with selfmade gates.py)
 - Squaring register (with qiskit builtin function)
