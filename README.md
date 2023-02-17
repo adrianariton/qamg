@@ -42,3 +42,4 @@ Run the following command if problems with imports and modules arrise:
 ```bash
 export PYTHONPATH=$PYTHONPATH:<yourpath> 
 ```
+'yourpath' is the output os the **pwd** command in the root directory
