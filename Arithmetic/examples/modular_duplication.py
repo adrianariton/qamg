@@ -6,7 +6,7 @@ from qiskit.quantum_info import Statevector
 import matplotlib.pyplot as plt
 from math import pi
 from sympy import symbols, preview, Symbol
-import gates
+import Arithmetic.gates as gates
 from qiskit.circuit.library import RGQFTMultiplier
 
 from qiskit import QuantumCircuit, execute
@@ -47,23 +47,20 @@ b = QuantumRegister(bits+1)
 c = QuantumRegister(bits)
 n = QuantumRegister(2*bits+1)
 cl = ClassicalRegister(bits+1)
+cla = ClassicalRegister(bits)
 
 
-add = gates.addermod(bits)
+add = gates.ncd(bits)
 
-circuit = QuantumCircuit(a,b,c,n,cl)
+circuit = QuantumCircuit(a,b,c,n,cl, cla)
 
 '''
-    Initialize a and b to 3 and 5
-    and n to 6
-    
-    It will calculate (3+5)%6 = 2
+    Initialize z to 3
 '''
 gates.init_reg(circuit, a, ds.binary(3, bits))
-gates.init_reg(circuit, b, ds.binary(5, bits+1))
 
 
-gates.init_reg(circuit, n, ds.binary(6, bits) + [[1, 0]] * (bits+1) )
+gates.init_reg(circuit, n, ds.binary(5, bits) + [[1, 0]] * (bits+1) )
 
 
 '''
@@ -80,7 +77,8 @@ circuit.barrier()
 for i in range(bits+1):
     circuit.measure(b[i], cl[i])
 
-
+for i in range(bits):
+    circuit.measure(a[i], cla[i])
 
 '''
     Run sampler and output results
@@ -88,5 +86,5 @@ for i in range(bits+1):
 job = sampler.run(circuit)
 result = job.result()
 
-circuit.draw("mpl", filename='pics/modadd.qg.png')
+circuit.draw("mpl", filename='pics/moddup.qg.png')
 print(f">>> Quasi-distribution: {result.quasi_dists[0]}")

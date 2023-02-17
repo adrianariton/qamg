@@ -4,11 +4,11 @@
 
 from qiskit import QuantumCircuit, QuantumRegister, ClassicalRegister, QuantumRegister, assemble, Aer, AncillaRegister
 from math import pi, sqrt
-import gates
+import Arithmetic.gates as gates
 from qiskit import transpile
 from qiskit.circuit.library import RGQFTMultiplier, PhaseGate, PolynomialPauliRotations, WeightedAdder, PiecewiseChebyshev
-from gates import RegisterUtils as regs
-from gates import DefiniteStates as ds
+from Arithmetic.gates import RegisterUtils as regs
+from Arithmetic.gates import DefiniteStates as ds
 from qiskit.visualization import plot_bloch_multivector, plot_histogram
 import numpy as np
 from qiskit.circuit.library import QFT

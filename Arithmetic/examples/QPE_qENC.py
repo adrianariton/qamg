@@ -1,5 +1,5 @@
 '''
-    Quantum Multiplexor: MUX
+    Quantum Encoder with a function
     
     Works exactly as the classical one, only if permutes the
     inputs so thet the result of the selecton is placed on position 0
@@ -10,7 +10,8 @@ import numpy as np
 from qiskit import QuantumCircuit, QuantumRegister, ClassicalRegister, AncillaRegister
 import matplotlib.pyplot as plt
 from math import pi, sqrt
-import gates
+import sys, os
+import Arithmetic.gates as gates
 
 from qiskit_ibm_runtime import Estimator, Session
 from qiskit_ibm_runtime import QiskitRuntimeService
@@ -35,49 +36,68 @@ service = QiskitRuntimeService()
 
 '''
     Change it to whatever suits your needs
+    bits: inrease for precision
 '''
-bits = 3
+bits = 6
+'''
+    psi_bits: number of bits for wave representation
+'''
+psi_bits = 4
 
 '''
     Declare Quantum Registers
     and classical register used for measurement
 '''
 a = QuantumRegister(bits)
-n = QuantumRegister(2 ** bits)
-anc = QuantumRegister(6)
+psi = QuantumRegister(psi_bits)
 
-cl = ClassicalRegister(1)
+cl = ClassicalRegister(bits)
 
-
-circuit = QuantumCircuit(a,n,cl)
-'''
-    a (selection) is 5 (101), so it selects the 5th input state:
-        5/13 * |0\ + 12/13 * |1\ 
-'''
-gates.init_reg(circuit, a, ds.binary(5, bits=bits))
+circuit = QuantumCircuit(a,psi,cl)
 
 '''
-    Initialize four different states for
-    testing pusposes 
+    Initialize psi[2] to 1:
+        psi : |0010...0\ 
 '''
-gates.init_reg(circuit, n, [[3.0/5, 4.0/5], [1, 0], [0, 1], [1/sqrt(2), 1/sqrt(2)], [4.0/5, 3.0/5], [5.0/13, 12.0/13], [0, 1], [1/sqrt(2), 1/sqrt(2)]])
+gates.init_reg(circuit, psi, ds.binary(2 ** 2, psi_bits))
 
-mux = gates.Selectors.MUX(bits)
-circuit.append(mux, regs.join(a,n))
+'''
+    If more bits are initialized to 1, the output is:
+        out = 1 / (sum(fct(i)) foreach i with psi[i] == |1\ )
+'''
+
+'''
+    The function should be positive, and greater then 0,
+    and also continous
+'''
+def fct(i):
+    return 2 ** (i + 2)
+
+encod = gates.Selectors.ENCODER(psi_bits=psi_bits, precision_bits=bits, func=fct)
+circuit.append(encod, regs.join(a, psi))
 
 circuit.barrier()
-circuit.measure(n[0], cl[0])
+for i in range(bits):
+    circuit.measure(a[i], cl[i])
 
 
-
+circuit = circuit.decompose(reps=1)
 '''
     Run sampler and output results
 '''
 job = sampler.run(circuit)
 result = job.result()
 
-circuit.draw("mpl", filename='pics/rth.qg.png')
+# circuit.draw("mpl", filename='pics/rth.qg.png')
 print(f">>> Quasi-distribution: {result.quasi_dists[0]}")
+
+exval = 0
+for key, val in result.quasi_dists[0].items():
+    exval += key * val
+print()
+print(f'>>> Expectation value: {exval}')
+print(f'    Fct value: fct(i) = {2 ** bits / exval}')
+print(f'    [i as in the i"th bit is 1 and the rest are 0]')
 
 '''
 For plotting:

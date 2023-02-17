@@ -1,20 +1,21 @@
 '''
-    ---- DEPRECATED ----
+    Thisd is a simple circuit that performs remainder division
     
-    It has too many bits in this form, it is unusable
-    
-    See more complex gates here:
-    https://qiskit.org/documentation/apidoc/circuit_library.html
+    The circuit contains 5 registers:
+        - n and d, each with bits bits
+        - q and r each with bits bits (which are initially all 0)
+        - anc with 3 bits (used in computation, not important)
 '''
 
 import numpy as np
 from qiskit import QuantumCircuit, QuantumRegister, ClassicalRegister, AncillaRegister
 import matplotlib.pyplot as plt
 from math import pi
-import gates
+import Arithmetic.gates as gates
 
 from qiskit_ibm_runtime import Estimator, Session
 from qiskit_ibm_runtime import QiskitRuntimeService
+from qiskit.circuit.random import random_circuit
 
 from qiskit.primitives import Sampler
 
@@ -36,56 +37,49 @@ service = QiskitRuntimeService()
 '''
     Change it to whatever suits your needs
 '''
-bits = 3
+bits = 6
 
 '''
     Declare Quantum Registers
     and classical register used for measurement
 '''
-a = QuantumRegister(bits)
-b = QuantumRegister(bits)
-n = QuantumRegister(2*bits)
-q = QuantumRegister(2*bits)
-out = QuantumRegister(2*bits)
-r = QuantumRegister(2*bits)
-anc = QuantumRegister(4)
+n = QuantumRegister(bits)
+d = QuantumRegister(bits)
+r = QuantumRegister(bits)
+q = QuantumRegister(bits)
+anc = QuantumRegister(3)
 
 cl = ClassicalRegister(bits)
 
 
 '''
-    Takes in 3 registers of length bits initialized to whatever
-    and a register of length 2*bits+1 initialized to |000....0\ aka 0. (out + t)
-    
-    Returns the first 3 register unchanged and the null one goes from 0 to
-    a * b mod n.
-    
-    |a\ |b\ |n\ |00...00\ |0\  => |a\ |b\ |n\ |a*b mod n\ |t\ 
+    Remainder theorem
+    |n\ |d\ |0\ |0\ |000\ => |n\ |d\ |n%d\ |n/d\ |***\ 
 '''
-mul = gates.QFTArithmetic.QFTModularMultiply(in_bits=bits)
-'''
-    QFT ModularMultiply gate is still in progress and will be implemented 
-    with 3 QFTRemainderTheorem gates and one Phase Multiplication
-'''
+rth = gates.QFTArithmetic.QFTRemainderTheorem(bits)
 
-circuit = QuantumCircuit(a,b,n,q, out, r, anc,cl)
+circuit = QuantumCircuit(n,d,r,q,anc,cl)
 
-gates.init_reg(circuit, a, ds.binary(2, bits=bits))
-gates.init_reg(circuit, b, ds.binary(7, bits=bits))
-gates.init_reg(circuit, n, ds.binary(5, bits=2*bits))
+gates.init_reg(circuit, n, ds.binary(13, bits=bits))
+gates.init_reg(circuit, d, ds.binary(3, bits=bits))
+
+circuit.append(rth, regs.join(n,d,r,q,anc))
+#circuit.append(ipadd.inverse(), regs.join(d, r, anc[2:]))
+#circuit.append(leftshift, regs.join(r, anc[0:2]))
+#circuit.append(leftshift, regs.join(r, anc[0:2]))
+
 
 '''
-    Multiply registers a and b modulo n and output to register out
-'''
-circuit.append(mul, regs.join(a, b, n, q, out, r, anc))
-    
-
-'''
-    Measure the out-register
+    Measure the r: remainder-register
+    You can also measure q: quotient-register with: 
+    |-------
+    | ....
+    |  circuit.measure(r[i], cl[i])
+    |
 '''
 circuit.barrier()
 for i in range(bits):
-    circuit.measure(r[i], cl[i])
+    circuit.measure(q[i], cl[i])
 
 
 
@@ -95,7 +89,7 @@ for i in range(bits):
 job = sampler.run(circuit)
 result = job.result()
 
-circuit.draw("mpl", filename='pics/modmul.qg.png')
+# circuit.draw("mpl", filename='pics/rth.qg.png')
 print(f">>> Quasi-distribution: {result.quasi_dists[0]}")
 
 '''

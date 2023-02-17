@@ -6,8 +6,7 @@ from qiskit.quantum_info import Statevector
 import matplotlib.pyplot as plt
 from math import pi
 from sympy import symbols, preview, Symbol
-import gates
-
+import Arithmetic.gates as gates
 ds = gates.DefiniteStates
 regs = gates.RegisterUtils
 sqrt = np.sqrt

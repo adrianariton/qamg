@@ -21,7 +21,7 @@ from qiskit.quantum_info import Statevector
 import matplotlib.pyplot as plt
 from math import pi
 from sympy import symbols, preview, Symbol
-import gates
+import Arithmetic.gates as gates
 from qiskit.circuit.library import RGQFTMultiplier
 
 from qiskit import QuantumCircuit, execute
@@ -127,5 +127,5 @@ for i in range(2*bits):
 job = sampler.run(circuit)
 result = job.result()
 
-circuit.draw("mpl", filename='rand.qibm.png')
+circuit.draw("mpl", filename='pics/rand.qibm.png')
 print(f">>> Quasi-distribution: {result.quasi_dists[0]}")
