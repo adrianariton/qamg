@@ -30,8 +30,10 @@ with changeble inputs (no custom made circuit)
 - [QEC Correction](https://wdscultan.github.io/files/QEC.pdf)
 - [https://en.wikipedia.org/wiki/Quantum_error_correction](https://en.wikipedia.org/wiki/Quantum_error_correction)
 - [https://arxiv.org/pdf/1808.06709.pdf](https://arxiv.org/pdf/1808.06709.pdf)
+- [Noise models in qiskit](https://qiskit.org/textbook/ch-quantum-hardware/error-correction-repetition-code.html)
 
 # History
 - 15.Feb.23 : Added QFTRemainderTheorem (RTH)
 - 16.Feb.23 : Added qMUX
+- 17.Feb.23 : Added qENCODER with custom function (QPE generalization)
 

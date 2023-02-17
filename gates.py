@@ -340,7 +340,24 @@ class Selectors:
                 if bit == 0:
                     kprim = k + (1 << i)
                     circ.cswap(sel[i], inp[k], inp[kprim])
-        return circ.to_gate()            
+        return circ.to_gate()      
+    
+    def ENCODER(psi_bits, precision_bits, func):
+        z = QuantumRegister(precision_bits)
+        psi = QuantumRegister(psi_bits)
+        
+        circ = QuantumCircuit(z, psi)
+        
+        circ.h(z)
+        
+        for t in reversed(range(precision_bits)):
+            for i in range(psi_bits):
+                ang = (2 * pi  * (2 ** t) / ( func(i)) )
+                circ.append(PhaseGate(ang).control(1), [z[precision_bits - t - 1], psi[i]])
+
+        circ.append(QFT(precision_bits, do_swaps=False).inverse().to_gate(), RegisterUtils.join(z))
+        
+        return circ.to_gate()
 
 class QFTArithmetic:
     def QFTInPlaceAdder(in_bits, qft=1):
