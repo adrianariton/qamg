@@ -36,6 +36,10 @@ with changeble inputs (no custom made circuit)
 - 15.Feb.23 : Added QFTRemainderTheorem (RTH)
 - 16.Feb.23 : Added qMUX
 - 17.Feb.23 : Added qENCODER with custom function (QPE generalization)
+- 17.Feb.23 : Beginining to study Black codes and Quantum Surface Codes
+
+# TODOs
+- Read about block codes
 
 ## Note:
 Run the following command if problems with imports and modules arrise:
