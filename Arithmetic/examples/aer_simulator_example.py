@@ -78,6 +78,9 @@ res = aer_sim.run(qasm).result()
 counts = res.get_counts()
 state = res.get_statevector()
 
+print()
+print(f'Depth: {qasm.depth()}')
+print()
 
 print("State:")
 print(state)

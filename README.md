@@ -32,6 +32,10 @@ with changeble inputs (no custom made circuit)
 - [https://arxiv.org/pdf/1808.06709.pdf](https://arxiv.org/pdf/1808.06709.pdf)
 - [Noise models in qiskit](https://qiskit.org/textbook/ch-quantum-hardware/error-correction-repetition-code.html)
 
+# Surface codes
+- [Toric explained on stackexchange](https://quantumcomputing.stackexchange.com/questions/2106/what-is-the-surface-code-in-the-context-of-quantum-error-correction)
+- [arxiv paper](https://arxiv.org/pdf/1208.0928.pdf)
+
 # History
 - 15.Feb.23 : Added QFTRemainderTheorem (RTH)
 - 16.Feb.23 : Added qMUX
@@ -42,8 +46,8 @@ with changeble inputs (no custom made circuit)
 - Read about block codes
 
 ## Note:
-Run the following command if problems with imports and modules arrise:
+Run the following command in the root folder if problems with imports and modules arrise:
 ```bash
-export PYTHONPATH=$PYTHONPATH:<yourpath> 
+export PYTHONPATH=$PYTHONPATH:$(pwd)
 ```
 'yourpath' is the output of the **pwd** command in the root directory

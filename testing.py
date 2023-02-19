@@ -43,27 +43,26 @@ bits = 4
     Declare Quantum Registers
     and classical register used for measurement
 '''
-n = QuantumRegister(bits)
-d = QuantumRegister(bits)
-r = QuantumRegister(bits)
-q = QuantumRegister(bits)
-anc = QuantumRegister(3)
+c = QuantumRegister(1)
+x = QuantumRegister(bits)
+psi = QuantumRegister(2*bits)
 
-cl = ClassicalRegister(bits)
-
+cl = ClassicalRegister(2*bits)
 
 '''
     Remainder theorem
     |n\ |d\ |0\ |0\ |000\ => |n\ |d\ |n%d\ |n/d\ |***\ 
 '''
-rth = gates.QFTArithmetic.QFTRemainderTheorem(bits)
+mpg = gates.ModularParametrizedGates()
+qmac = mpg.QFTMAC(bits=bits, a=4)
 
-circuit = QuantumCircuit(n,d,r,q,anc,cl)
+circuit = QuantumCircuit(c,x,psi,cl)
 
-gates.init_reg(circuit, n, ds.binary(13, bits=bits))
-gates.init_reg(circuit, d, ds.binary(3, bits=bits))
+gates.init_reg(circuit, c, ds.binary(1, bits=bits))
+gates.init_reg(circuit, x, ds.binary(3, bits=bits))
+gates.init_reg(circuit, psi, ds.binary(3, bits=2*bits))
 
-circuit.append(rth, regs.join(n,d,r,q,anc))
+circuit.append(qmac, regs.join(c,x,psi))
 #circuit.append(ipadd.inverse(), regs.join(d, r, anc[2:]))
 #circuit.append(leftshift, regs.join(r, anc[0:2]))
 #circuit.append(leftshift, regs.join(r, anc[0:2]))
@@ -78,8 +77,8 @@ circuit.append(rth, regs.join(n,d,r,q,anc))
     |
 '''
 circuit.barrier()
-for i in range(bits):
-    circuit.measure(q[i], cl[i])
+for i in range(2*bits):
+    circuit.measure(psi[i], cl[i])
 
 
 
@@ -92,7 +91,6 @@ result = job.result()
 # circuit.draw("mpl", filename='pics/rth.qg.png')
 print(f">>> Quasi-distribution: {result.quasi_dists[0]}")
 print('-------------------')
-print(f'circuit.depth: {circuit.depth()}')
 
 '''
 For plotting:

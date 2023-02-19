@@ -260,6 +260,51 @@ def crslide(bits, k):
     circ.x(ctrl)
     return circ.to_instruction()
 
+
+'''
+    Analog_Arithmetic
+'''
+
+class ModularParametrizedGates:
+    def __init__(self, modular=False, N=15) -> None:
+        self.modular = modular
+        self.N = N
+        
+    '''
+        b => a + b 
+    '''
+    def QFTAdder(self, in_bits, a, qft=1):
+        b = QuantumRegister(in_bits)
+        
+        if self.modular == True:
+            a = a % self.N
+        
+        circ = QuantumCircuit(b, name='MPGQFTADD')
+        if qft == 1:
+            circ.append(QFT(in_bits, do_swaps=False).to_gate(), RegisterUtils.join(b))
+        for k in range(in_bits):
+            ang = (2 * pi * a) / (2 ** (k + 1))
+            circ.append(PhaseGate(ang), [b[k]])
+        if qft == 1:
+            circ.append(QFT(in_bits, do_swaps=False).inverse().to_gate(), RegisterUtils.join(b))
+        return circ.to_gate()
+    
+    '''
+        x, b => b + ax
+    '''
+    def QFTMAC(self, bits, a, qft=1):
+        c = QuantumRegister(1)
+        x = QuantumRegister(bits)
+        psi = QuantumRegister(2*bits)
+        circ = QuantumCircuit(c, x, psi, name='MPGQFTMAC')
+        if qft == 1:
+            circ.append(QFT(2*bits, do_swaps=False).to_gate(), RegisterUtils.join(psi))
+        for i in range(bits):
+            qadd = ModularParametrizedGates.QFTAdder(self, in_bits=2*bits, a=(2 ** i) * a, qft=-1).control(2)     
+            circ.append(qadd, [c[0], x[i]] + RegisterUtils.join(psi))
+        if qft == 1:
+            circ.append(QFT(2*bits, do_swaps=False).inverse().to_gate(), RegisterUtils.join(psi))
+        return circ.to_gate()
 '''
     Useful
 '''
@@ -452,7 +497,7 @@ class QFTArithmetic:
         r = QuantumRegister(in_bits)
         out = QuantumRegister(in_bits)
         anc = QuantumRegister(1)
-        circ = QuantumCircuit(d, q, r, out, anc)
+        circ = QuantumCircuit(d, q, r, out, anc, name='QFTDQR')
         circ.append(QFT(in_bits, do_swaps=False).to_gate(), RegisterUtils.join(out))
 
         for i in range(in_bits):
@@ -520,4 +565,8 @@ class QFTArithmetic:
         return circ.to_gate()
 
 def all():
-    return ['ADD', 'CARRY', 'SUM', 'CARRY_dg', 'SUM_dg', 'ADD_dg', 'MODADDn', 'MODADDn_dg', 'MODADD', 'MODADD_dg', 'QFT', 'QFT_dg', 'NCD', 'NCD_dg', 'LSLIDE', 'LSLIDE_dg', 'RSLIDE', 'RSLIDE_dg']
+    return ['ADD', 'CARRY', 'SUM', 'CARRY_dg', 'SUM_dg', 'ADD_dg',
+            'MODADDn', 'MODADDn_dg', 'MODADD', 'MODADD_dg', 'QFT',
+            'QFT_dg', 'NCD', 'NCD_dg', 'LSLIDE', 'LSLIDE_dg', 'RSLIDE',
+            'RSLIDE_dg', 'QFTPadder', 'QFTPadder_dg', 'QFTRTH',
+            'QFTDQR', 'QFTMM']
