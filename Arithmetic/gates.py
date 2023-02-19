@@ -237,6 +237,45 @@ def rslide(bits, k):
     
     return circ.to_gate()
 
+def lslide(bits, k):
+    data = QuantumRegister(bits)
+    ancilla = AncillaRegister(k)
+    c = QuantumRegister(1)
+    
+    circ = QuantumCircuit(data, ancilla, c, name='LSLIDE')
+    
+    for i in reversed(range(k)):
+        if i >= 1:
+            circ.swap(ancilla[i], ancilla[i-1])
+    if k > 0:
+        circ.swap(ancilla[k-1], data[0])
+    
+    for i in range(bits):
+        if i > 0:
+            circ.swap(data[i], data[i-1])
+    if k >= 1:
+        circ.cswap(c[0], ancilla[k-1], data[0])
+    
+    return circ.to_gate()
+
+def compare(bits):
+    a = QuantumRegister(bits)
+    b = QuantumRegister(bits)
+    c = QuantumRegister(bits)
+    anc = AncillaRegister(1)
+    out = QuantumRegister(1)
+
+
+
+    circ = QuantumCircuit(a, b, anc, out, name='QEQUAL')
+
+    circ.append(adder(bits), RegisterUtils.join(a, b, anc[0:1], c))
+
+    circ.cnot(anc[0], out[0])
+
+    circ.append(dadder(bits), RegisterUtils.join(a, b, anc[0:1], c))
+    return circ.to_gate()
+
 
 
 def crslide(bits, k):
@@ -405,6 +444,35 @@ class Selectors:
         return circ.to_gate()
 
 class QFTArithmetic:
+    def QFTEqual(bits):
+        a = QuantumRegister(bits)
+        b = QuantumRegister(bits)
+        anc = AncillaRegister(1)
+        out = QuantumRegister(1)
+
+        circ = QuantumCircuit(a, b, anc, out, name='QEQUAL')
+
+        circ.append(ModularParametrizedGates().QFTAdder(bits, 1), RegisterUtils.join(a))
+        circ.append(QFTArithmetic.QFTInPlaceAdder(bits), RegisterUtils.join(a, am1, anc))
+
+    def QFTCompare(bits):
+        a = QuantumRegister(bits)
+        b = QuantumRegister(bits)
+        anc = AncillaRegister(1)
+        out = QuantumRegister(1)
+
+
+
+        circ = QuantumCircuit(a, b, anc, out, name='QEppppAL')
+
+        circ.append(QFTArithmetic.QFTInPlaceDAdder(bits), RegisterUtils.join(a, b, anc))
+
+        circ.cnot(anc[0], out[0])
+        circ.append(QFTArithmetic.QFTInPlaceAdder(bits), RegisterUtils.join(a, b, anc))
+
+        
+
+        return circ.to_gate()
     def QFTInPlaceAdder(in_bits, qft=1):
         a = QuantumRegister(in_bits)
         b = QuantumRegister(in_bits + 1)
