@@ -444,16 +444,19 @@ class Selectors:
         return circ.to_gate()
 
 class QFTArithmetic:
+    '''
+        Unfinished
+    '''
     def QFTEqual(bits):
         a = QuantumRegister(bits)
         b = QuantumRegister(bits)
         anc = AncillaRegister(1)
         out = QuantumRegister(1)
 
-        circ = QuantumCircuit(a, b, anc, out, name='QEQUAL')
+        circ = QuantumCircuit(a, b, anc, out, name='QFTEQUAL')
 
         circ.append(ModularParametrizedGates().QFTAdder(bits, 1), RegisterUtils.join(a))
-        circ.append(QFTArithmetic.QFTInPlaceAdder(bits), RegisterUtils.join(a, am1, anc))
+        # circ.append(QFTArithmetic.QFTInPlaceAdder(bits), RegisterUtils.join(a, am1, anc))
 
     def QFTCompare(bits):
         a = QuantumRegister(bits)
@@ -463,7 +466,7 @@ class QFTArithmetic:
 
 
 
-        circ = QuantumCircuit(a, b, anc, out, name='QEppppAL')
+        circ = QuantumCircuit(a, b, anc, out, name='QFTCOMP')
 
         circ.append(QFTArithmetic.QFTInPlaceDAdder(bits), RegisterUtils.join(a, b, anc))
 
