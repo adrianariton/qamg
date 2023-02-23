@@ -216,16 +216,28 @@ def equal_numbers(x_bits):
     return circ.to_instruction()
 
 
-# function to get the negative of a x_bits number
-# |x> -> |-x>
-def get_negative(x_bits):
+# function to get the modulo value of a x_bits negative number
+# |x> |1> -> |-x> |1>
+def get_positive(x_bits):
     a = QuantumRegister(x_bits)
     b = QuantumRegister(1)
-    circ = QuantumCircuit(a, b, name = "NEGATIVE")
+
+    circ = QuantumCircuit(a, b, name = "POSITIVE")
     for i in range(x_bits):
         circ.x(a[i])
 
+    circ.cnot(b, a[-1])
+
+    for i in range(x_bits - 1, 0, -1):
+        circ.x(a[i])
+        circ.mcx([*a[i:x_bits]], a[i - 1])
     
+    for i in range(1, x_bits):
+        circ.x(a[i])
+
+    circ.draw("mpl", filename = "pics/positive_function.png")
+
+    return circ.to_instruction()
     
 
 class FPArithmetic:
@@ -289,3 +301,33 @@ def verify_two_numbers_equality_experiment(a, b):
     plot_histogram(counts, title='Output value', filename='pics/histogram_equal.png')
 
 
+# the following function is for testing whether we can get modulo value of a number
+def find_modulo_testing(number):
+    fp = FloatingPoint(2**number)
+
+    bits_number = len(fp.E_bits)
+    a = QuantumRegister(bits_number)
+    b = QuantumRegister(1)
+
+    cl = ClassicalRegister(bits_number)
+
+    circ = QuantumCircuit(a, b, cl)
+    initialize_states(circ, a, fp.E_bits)
+    initialize_states(circ, b, [[0, 1]])
+
+    circ.append(get_positive(bits_number), [*a] + [*b])
+
+    for i in range(bits_number):
+        circ.measure(a[i], cl[i])
+
+    circ.draw("mpl", filename= "modulo_experiment.png")
+
+    device_backend = FakeVigo()
+    sim_ideal = AerSimulator()
+    sim_vigo = AerSimulator.from_backend(device_backend)
+
+    result = sim_ideal.run(transpile(circ, sim_ideal)).result()
+    counts = result.get_counts(0)
+    plot_histogram(counts, title='Output value', filename='pics/histogram_modulo.png')
+
+find_modulo_testing(-5)
