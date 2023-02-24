@@ -36,50 +36,46 @@ service = QiskitRuntimeService()
 '''
     Change it to whatever suits your needs
 '''
-bits = 4
+bits = 3
 
 '''
     Declare Quantum Registers
     and classical register used for measurement
 '''
+ctrl = QuantumRegister(1)
+z = QuantumRegister(bits)
 a = QuantumRegister(bits)
-b = QuantumRegister(bits)
-anc = AncillaRegister(1)
-out = QuantumRegister(1)
-cl = ClassicalRegister(1)
+b = QuantumRegister(bits+1)
+anc = AncillaRegister(2 * bits + 1)
+cl = ClassicalRegister(bits+1)
+circuit = QuantumCircuit(ctrl,z,a,b,anc,cl)
 
-circuit = QuantumCircuit(a,b,anc,out,cl)
+gates.init_reg(circuit, z, ds.binary(4, bits))
 
-'''
-    Initialize a and b to 3 and 5
-    and n to 6
-    
-    It will calculate (3+5)%6 = 2
-'''
-gates.init_reg(circuit, a, ds.binary(5, bits))
-gates.init_reg(circuit, b, ds.binary(6, bits))
+circuit.x(ctrl)
 
+scmm = gates.ModularParametrizedGates(modular=True, N=7).SimpleControlledModularMultiplicator(bits, 5)
 
-'''
-    Multiply registers a and b and output to register n
-'''
-circuit.append(gates.QFTArithmetic.QFTCompare(bits), regs.join(a,b,anc,out))
-
+circuit.append(scmm, regs.join(ctrl,z,a,b,anc))
 
 
 '''
     Measure the n-register
 '''
 circuit.barrier()
-circuit.measure(out[0], cl[0])
+for i in range(bits+1):
+    circuit.measure(b[i], cl[i])
 
 
+circuit = circuit.decompose(gates_to_decompose=gates.all(), reps=5)
 
+print(f'Circuit: {circuit.depth()}')
 '''
     Run sampler and output results
 '''
 job = sampler.run(circuit)
 result = job.result()
 
-# circuit.draw("mpl", filename='pics/modadd.qg.png')
+circuit.draw("mpl", filename='pics/gtest.qg.png')
 print(f">>> Quasi-distribution: {result.quasi_dists[0]}")
+

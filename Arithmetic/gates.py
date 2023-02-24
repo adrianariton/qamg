@@ -26,6 +26,9 @@ dsum_circ.cnot(1, 2)
 dsum = dsum_circ.to_instruction()
 
 def adder(bits):
+    '''
+        2 bits + 1 complexity
+    '''
     qa = QuantumRegister(bits)
     qb = QuantumRegister(bits+1)
     qc = QuantumRegister(bits)
@@ -68,6 +71,17 @@ def addermodn(bits, n):
     qt = QuantumRegister(1)
     
     addmod_circ = QuantumCircuit(qa, qb, qc, qn, qt, name='MODADDn')
+    m = n
+    nbits = []
+    for i in range(bits):
+        bit = (m) & 1
+        nbits = nbits + [bit]
+        m = (m >> 1)
+    for i in reversed(range(bits)):
+        bit = nbits[i]
+        if bit == 1:
+            addmod_circ.x(qn[i])
+    
     addmod_circ.append(adder(bits), [*qa] + [*qb] + [*qc])
     for i in range(bits):
         addmod_circ.swap(qa[i], qn[i])
@@ -76,12 +90,7 @@ def addermodn(bits, n):
     addmod_circ.x(qb[bits])
     addmod_circ.cnot(qb[bits], qt[0])
     addmod_circ.x(qb[bits])
-    m = n
-    nbits = []
-    for i in range(bits):
-        bit = (m) & 1
-        nbits = nbits + [bit]
-        m = (m >> 1)
+   
     for i in reversed(range(bits)):
         bit = nbits[i]
         if bit == 1:
@@ -103,10 +112,21 @@ def addermodn(bits, n):
 
     addmod_circ.append(adder(bits), [*qa] + [*qb] + [*qc])
     
+    for i in reversed(range(bits)):
+        bit = nbits[i]
+        if bit == 1:
+            addmod_circ.x(qn[i])
+    
     addmod_circ.draw('mpl', filename='addmod.qg.png')
     
     return addmod_circ.to_instruction()
 
+'''
+    qa(bits) qb(bits+1) qc(bits) qn(bits) qn2(bits) qt(1)
+    qn2, qc and gt should be prepared in state zero
+    
+    a, b, c, n, n2, t => a, (b+a)%n, c, n, n2, t
+'''    
 def addermod(bits):
     qa = QuantumRegister(bits)
     qb = QuantumRegister(bits + 1)
@@ -114,10 +134,6 @@ def addermod(bits):
     qn = QuantumRegister(bits)
     qn2 = QuantumRegister(bits)
     qt = QuantumRegister(1)
-    '''
-    qa(bits) qb(bits+1) qc(bits) qn(bits) qn2(bits) qt(1)
-    qn2, qc and gt should be prepared in state zero
-    '''
     
     addmod_circ = QuantumCircuit(qa, qb, qc, qn, qn2, qt, name='MODADD')
     
@@ -309,6 +325,68 @@ class ModularParametrizedGates:
         self.modular = modular
         self.N = N
         
+    
+    def SimpleModularAdder(self, in_bits):
+        '''
+            Parameters: self.N
+            Gate complexity: O(in_bits) o(45*in_bits+4)
+            Bits complexity: 4*in_bits + 2
+            Registers: |qa(in_bits)\ |qb(in_bits+1)\ |qancilla(2*in_bits+1) = 0\ 
+
+                |a\ |b\ |anc\ => |a\ |(a+b)%n\ |anc\ 
+        '''
+        if self.modular == False:
+            raise TypeError('MPG [ModularParametrizedGates object] cannot use SMA [SimpleModularAdder] without self.N attribute specification.\nAlso self.modular needs to be true.')
+        
+        return addermodn(bits=in_bits, n=self.N)
+    
+    def SimpleControlledModularMultiplicator(self, in_bits, factor):
+        if self.modular == False:
+            raise TypeError('MPG [ModularParametrizedGates object] cannot use SCMM [SimpleControlledModularMultiplicator] without self.N attribute specification.\nAlso self.modular needs to be true.')
+        
+        c = QuantumRegister(1)
+        z = QuantumRegister(in_bits)
+        a = QuantumRegister(in_bits)
+        b = QuantumRegister(in_bits + 1)
+        anc = QuantumRegister(2*in_bits + 1)
+        
+        circuit = QuantumCircuit(c,z,a,b,anc, name='SCMM')
+        
+        p = 1
+        
+        for i in range(in_bits):
+            v = (p * factor) % self.N
+            vbits = bin(v)[2:]
+            vbits = list(reversed(vbits))
+            
+            for j in range(in_bits):
+                if j >= len(vbits):
+                    continue
+                if vbits[j] == '1':
+                    circuit.ccx(c[0], z[i], a[j])
+            
+            circuit.append(ModularParametrizedGates.SimpleModularAdder(self, in_bits), RegisterUtils.join(a,b,anc))
+                    
+            for j in range(in_bits):
+                if j >= len(vbits):
+                    continue
+                if vbits[j] == '1':
+                    circuit.ccx(c[0], z[i], a[j])
+            
+            p = p * 2
+        
+        circuit.x(c)
+        
+        for i in range(in_bits):
+            circuit.ccx(c[0], z[i], b[i])
+        
+        circuit.x(c)
+        
+        return circuit
+         
+        
+        
+        
     '''
         b => a + b 
     '''
@@ -329,7 +407,8 @@ class ModularParametrizedGates:
         return circ.to_gate()
     
     '''
-        x, b => b + ax
+        c, x, psi => c, x, psi + c*a*x
+        c, x, 0 => c, x, ax
     '''
     def QFTMAC(self, bits, a, qft=1):
         c = QuantumRegister(1)
@@ -344,6 +423,31 @@ class ModularParametrizedGates:
         if qft == 1:
             circ.append(QFT(2*bits, do_swaps=False).inverse().to_gate(), RegisterUtils.join(psi))
         return circ.to_gate()
+    
+    '''
+        modular exponentiation
+    '''
+    def QFTMEXP(self, bits, base, qft=1):
+        c = QuantumRegister(1)
+        x = QuantumRegister(2 *bits)
+        out = QuantumRegister(2 * bits)
+        
+        if self.modular == False:
+            raise TypeError('MPG [ModularParametrizedGates object] cannot use QFTMEXP [Modular exponentiation] without self.N attribute specification.\nAlso self.modular needs to be true.')
+        
+        circuit = QuantumCircuit(c, x, out, name='MPGQFTMEXP')
+        
+        circuit.x(x[0])
+        
+        if qft == 1:
+            circuit.append(QFT(2*bits, do_swaps=False).to_gate(), RegisterUtils.join(out))
+        for i in range(bits):
+            # out = x * base
+            circuit.append(ModularParametrizedGates.QFTMAC(self, bits, a=( (base ** (2 ** i)) % self.N ), qft=-1), RegisterUtils.join(c, x[0:bits], out))
+            for j in range(2 * bits):
+                circuit.cswap(c[0], out[j], x[j])
+        if qft == 1:
+            circuit.append(QFT(2*bits, do_swaps=False).inverse().to_gate(), RegisterUtils.join(out))
 '''
     Useful
 '''
@@ -640,4 +744,4 @@ def all():
             'MODADDn', 'MODADDn_dg', 'MODADD', 'MODADD_dg', 'QFT',
             'QFT_dg', 'NCD', 'NCD_dg', 'LSLIDE', 'LSLIDE_dg', 'RSLIDE',
             'RSLIDE_dg', 'QFTPadder', 'QFTPadder_dg', 'QFTRTH',
-            'QFTDQR', 'QFTMM']
+            'QFTDQR', 'QFTMM', 'SCMM']
