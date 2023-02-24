@@ -217,16 +217,13 @@ def equal_numbers(x_bits):
 
 
 # function to get the modulo value of a x_bits negative number
-# |x> |1> -> |-x> |1>
+# |x> -> |-x>
 def get_positive(x_bits):
     a = QuantumRegister(x_bits)
-    b = QuantumRegister(1)
-
-    circ = QuantumCircuit(a, b, name = "POSITIVE")
-    for i in range(x_bits):
+    
+    circ = QuantumCircuit(a, name = "POSITIVE")
+    for i in range(x_bits - 1):
         circ.x(a[i])
-
-    circ.cnot(b, a[-1])
 
     for i in range(x_bits - 1, 0, -1):
         circ.x(a[i])
@@ -315,7 +312,7 @@ def find_modulo_testing(number):
     initialize_states(circ, a, fp.E_bits)
     initialize_states(circ, b, [[0, 1]])
 
-    circ.append(get_positive(bits_number), [*a] + [*b])
+    circ.append(get_positive(bits_number), [*a])
 
     for i in range(bits_number):
         circ.measure(a[i], cl[i])
@@ -330,4 +327,7 @@ def find_modulo_testing(number):
     counts = result.get_counts(0)
     plot_histogram(counts, title='Output value', filename='pics/histogram_modulo.png')
 
-find_modulo_testing(-5)
+
+# find_modulo_testing(-7)
+# get_positive(5)
+
