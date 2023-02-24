@@ -1,5 +1,9 @@
 # qamg + mohican
 
+# Important!
+## AMG-ul:
+## Open issues for any quaestion you have so we can solve it
+
 See Mohican basic code in the Mohican folder.
 Qiskit links are in code.
 
@@ -41,9 +45,11 @@ with changeble inputs (no custom made circuit)
 - 16.Feb.23 : Added qMUX
 - 17.Feb.23 : Added qENCODER with custom function (QPE generalization)
 - 17.Feb.23 : Beginining to study Black codes and Quantum Surface Codes
+- 24.Feb.23 : Added MPGs (parametrized gates): SCMM and SMA
 
 # TODOs
-- Read about block codes
+- Read about block codes [Done]
+- Surface codes in depth
 
 ## Note:
 Run the following command in the root folder if problems with imports and modules arrise:
