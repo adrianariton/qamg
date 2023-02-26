@@ -1,8 +1,7 @@
 # qamg + mohican
 
 # Important!
-## AMG-ul:
-## Open issues for any quaestion you have so we can solve it
+## Open issues for any question you have so we can solve it
 
 See Mohican basic code in the Mohican folder.
 Qiskit links are in code.
