@@ -744,4 +744,4 @@ def all():
             'MODADDn', 'MODADDn_dg', 'MODADD', 'MODADD_dg', 'QFT',
             'QFT_dg', 'NCD', 'NCD_dg', 'LSLIDE', 'LSLIDE_dg', 'RSLIDE',
             'RSLIDE_dg', 'QFTPadder', 'QFTPadder_dg', 'QFTRTH',
-            'QFTDQR', 'QFTMM', 'SCMM']
+            'QFTDQR', 'QFTMM', 'SCMM', 'LSCF', 'StabX', 'StabY']
