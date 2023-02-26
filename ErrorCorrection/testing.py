@@ -99,13 +99,14 @@ logical_xgate()
 circuit.append(QEC_circ.to_instruction(), regs.join(w, anc) , cl)
 
 '''
-+- noise function which is small because we only have
-distance=1 (Aer needs a lot more time for distance=3 and 4)
-
-
+    +- noise function which is small because we only have
+    distance=1 (Aer needs a lot more time for distance=3 and 4)
 '''
 noise()
 
+'''
+    Z logical gate
+'''
 circuit.append(QEC_circ.to_instruction(), regs.join(w, anc) , cl)
 circuit.barrier()
 logical_zgate()
@@ -113,6 +114,10 @@ circuit.append(QEC_circ.to_instruction(), regs.join(w, anc) , cl)
 
 
 circuit.barrier()
+
+'''
+    Measuring
+'''
 measure_circ()
 
 
