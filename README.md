@@ -50,6 +50,7 @@ with changeble inputs (no custom made circuit)
 - 17.Feb.23 : Added qENCODER with custom function (QPE generalization)
 - 17.Feb.23 : Beginining to study Black codes and Quantum Surface Codes
 - 24.Feb.23 : Added MPGs (parametrized gates): SCMM and SMA
+- 26.Feb.23 : Added basic surface codes support and roughly implemented logical gates
 
 # TODOs
 - Read about block codes [Done]
