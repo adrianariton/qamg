@@ -47,42 +47,75 @@ backend = service.backend("ibmq_qasm_simulator")
 sampler = Sampler()
 
 '''
-    Change it to whatever suits your needs
-'''
-bits = 4
+    Useful paper https://arxiv.org/pdf/1208.0928.pdf
+    [Can also be found in README.md]
+    
+    For distance=3 4x4 Single Zcut Cubit QEC,
+    the following configuration works:
+    
+        b2 = 13
+        b1 = 12
+        [...]
+        QEC_circ = ErrorCorrection.LaticealSurfaceCodes.SingleZcut(width=4, height=4, distance=1)
 
+    The one below is for a 4x2 distance=1 Single Zcut Cubit
 '''
-    Declare Quantum Registers
-    and classical register used for measurement
-'''
-total = (bits+1)**2
-b1 = total//2
-b2 = b1
-if b1*2 < total:
-    b2 = b1 + 1
-
-print(b1, b2)
-
+b2 = 8
+b1 = 7
 w = QuantumRegister(b2)
 anc = AncillaRegister(b1)
 cl = ClassicalRegister(b1)
 circuit = QuantumCircuit(w,anc,cl)
 
-logical_bit = ErrorCorrection.LaticealSurfaceCodes.SingleZcut()
-# logical_bit = ErrorCorrection.LaticealSurfaceCodes.FullSurface(begin_with='X')
-circuit.append(logical_bit.to_instruction(), regs.join(w, anc) , cl)
+QEC_circ = ErrorCorrection.LaticealSurfaceCodes.SingleZcut(width=4, height=2, distance=1)
+#QEC_circ = ErrorCorrection.LaticealSurfaceCodes.FullSurface(begin_with='X', width=bits, height=bits)
+
+stabz = ErrorCorrection.LaticealSurfaceCodes.StabilizerZ()
+
+def measure_circ():
+    circuit.append(stabz, [w[3],w[1],w[4], w[6], anc[3]])
+    circuit.measure(anc[3], cl[3])
+
+def logical_xgate():
+    circuit.x(w[1])
+
+def logical_zgate():
+    circuit.z(w[1])
+    circuit.z(w[3])
+    circuit.z(w[4])
+    circuit.z(w[6])
+    
+def noise():
+    circuit.x(w[2])
+
+'''
+     Append QEC [Error correction]
+     then logical X gate
+     and then the correction again
+'''
+circuit.append(QEC_circ.to_instruction(), regs.join(w, anc) , cl)
+circuit.barrier()
+logical_xgate()
+circuit.append(QEC_circ.to_instruction(), regs.join(w, anc) , cl)
+
+'''
++- noise function which is small because we only have
+distance=1 (Aer needs a lot more time for distance=3 and 4)
 
 
 '''
-    Measure the n-register
-'''
-circuit.barrier()
+noise()
 
-## Measuring the bit
-circuit.append(logical_bit.to_instruction(), regs.join(w, anc) , cl)
+circuit.append(QEC_circ.to_instruction(), regs.join(w, anc) , cl)
+circuit.barrier()
+logical_zgate()
+circuit.append(QEC_circ.to_instruction(), regs.join(w, anc) , cl)
+
 
 circuit.barrier()
-#circuit.measure(anc[8], cl[8])
+measure_circ()
+
+
 circuit.save_statevector()
 
 
@@ -97,10 +130,30 @@ job = aer_sim.run(circuit)
 result = job.result()
 
 print(f">>> Quasi-distribution: {result.get_counts()}")
+print(result.get_statevector())
+
+dt = result.get_statevector()
+print(dt.draw(output='latex_source'))
+
+#circle1 = plt.Circle((0, 0), 1, color='b', fill=False)
+#plt.gca().add_patch(circle1)
+
+#plt.plot([0,result.get_counts()['0000000']/1024.0], [0,result.get_counts()['0001000']/1024.0], '.-')
+
+#plt.show()
 '''
-xx = list([*result.quasi_dists[0]])
-plt.title('Ancilla measurements')
-plt.plot(xx,  dict(result.quasi_dists[0]).values(), 'r.')
+data = result.get_counts()
+
+courses = list(data.keys())
+values = list(data.values())
+  
+fig = plt.figure(figsize = (10, 5))
+
+# creating the bar plot
+plt.bar(courses, values, color ='maroon',
+        width = 0.4)
+
+plt.title('Ancilla')
 plt.show()
 '''
 

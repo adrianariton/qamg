@@ -86,10 +86,16 @@ class LaticealSurfaceCodes:
                     if sw == 1:
                         arx = arx + [j]
                         ary = ary + [i]
-                    circuit.measure(anc[anc_position], cl[anc_position])
+                    if sw == 0:
+                        print(f'De-activated anc: {anc_position} \n\tbits:{pos}')
+                    if sw == 1:
+                        circuit.measure(anc[anc_position], cl[anc_position])
         plt.scatter(arx, ary, c=arc, s=[300] * len(arx))
         plt.show()
         return circuit
     
     def SingleZcut(width=4, height=4, distance=2):
         return LaticealSurfaceCodes.FullSurface(width, height, cut=True, cut_line=2*distance-1, begin_with='X')
+    
+    def SingleXcut(width=4, height=4, distance=2):
+        return LaticealSurfaceCodes.FullSurface(width, height, cut=True, cut_line=2*distance-1, begin_with='Z')

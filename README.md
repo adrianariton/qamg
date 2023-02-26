@@ -42,6 +42,7 @@ with changeble inputs (no custom made circuit)
 # Surface codes: in-depth dive
 - [Toric surface code explained on stackexchange. Also helps for a basic understanding of surface codes](https://quantumcomputing.stackexchange.com/questions/2106/what-is-the-surface-code-in-the-context-of-quantum-error-correction)
 - [Logical cubits and gates, single and double X/Z-cut logical bits, and useful implementations of measurement and initialization operations on QEC surface codes](https://arxiv.org/pdf/1208.0928.pdf)
+- [Nature cool article](https://www.nature.com/articles/s41586-022-05434-1)
 - [Noise models in qiskit](https://qiskit.org/textbook/ch-quantum-hardware/error-correction-repetition-code.html)
 
 # History
