@@ -16,4 +16,6 @@ an equivalent circuit with simple qubits is in ```equiv.py```
 ## Single Z-cut logical qubit
 
 ![S2](pics/SingleZcut.png)
+
+
 View more at ```FIG. 9.``` in [this article](https://arxiv.org/pdf/1208.0928.pdf)
